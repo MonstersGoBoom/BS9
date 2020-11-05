@@ -1,0 +1,33 @@
+
+STORE START,$2000,"basic.rom"
+	&=$4000
+TXTPTR  BSS 2 
+TXTPTR2  BSS 2
+
+ORG $8000
+START:
+
+	lda internal
+	lda Function.data
+	jsr Function.init
+
+	rts
+
+SCOPE Function 
+	; defines variable globally 
+internal	BSS 1
+	; .label = available outside of scope 
+.data	
+	BINARY "README.md"
+
+.init	lda internal
+	sta $02
+	rts
+.update
+	lda .data 
+	sta $02 
+	rts
+
+ENDS
+
+

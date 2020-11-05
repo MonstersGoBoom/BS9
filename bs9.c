@@ -5,7 +5,16 @@
 Bit Shift Assembler
 *******************
 
+Version: 05-Nov-2020
+
+ADDENDUM:
+
+	fixed BSS detection code. 
+	added SCOPE & ENDS: same as SUBROUTINE and ENDSUB, just less typing.
+	added BINARY 			: same as LOAD, just another keyword. 
+
 Version: 15-May-2020
+
 
 The assembler was developed and tested on a MAC with macOS Catalina.
 Using no specific options of the host system, it should run on any
@@ -2769,6 +2778,7 @@ struct PseudoStruct PseudoTab[] =
    {"INTERN"    , &ps_ignore },
    {"LIST"      , &ps_list   },
    {"LOAD"      , &ps_load   },
+   {"BINARY"    , &ps_load   },
    {"LONG"      , &ps_long   },
    {"ORG"       , &ps_org    },
    {"RMB"       , &ps_rmb    },
@@ -2778,6 +2788,10 @@ struct PseudoStruct PseudoTab[] =
    {"SIZE"      , &ps_size   },
    {"STORE"     , &ps_store  },
    {"SUBROUTINE", &ps_subr   },
+
+   {"SCOPE", 			&ps_subr   },
+   {"ENDS"    , &ps_endsub },
+
    {"TTL"       , &ps_ignore },
    {"WORD"      , &ps_word   }
 };
@@ -2789,7 +2803,6 @@ char *CheckPseudo(char *p)
    int i;
 
    p = SkipSpace(p);
-
    for (i=0 ; i < PSEUDOS ; ++i)
    if (!strcmpword(p,PseudoTab[i].keyword))
    {
@@ -4293,6 +4306,7 @@ void ParseLine(char *cp)
    }
 
    cp = CheckPseudo(cp);
+
    if (!cp) return;      // Pseudo Op successfull processed
    if (*cp == '.' || *cp == '_' || isalpha(*cp)) // Macro, Label or mnemonic
    {
@@ -4331,8 +4345,11 @@ void ParseLine(char *cp)
    if (ForcedEnd)  return;
    if (*cp ==  0 ) return;             // No code
    if (*cp == ';') return;             // No code
-   if (*cp == '&') cp = SetBSS(cp);    // Set BSS counter
-   cp = CheckPseudo(cp);
+   if (*cp == '&')
+	 {
+		 cp = SetBSS(cp);    // Set BSS counter
+		 return;							//	added this resolves bss issue
+	 }
    if (!cp) return;      // Pseudo Op successfull processed
    if (MneIndex < 0) MneIndex = IsInstruction(cp); // Check for mnemonic after label
    if (MneIndex >= 0)
@@ -4742,7 +4759,7 @@ int main(int argc, char *argv[])
    {
       printf("\n");
       printf("*******************************************\n");
-      printf("* Bit Shift Assembler 15-May-2020         *\n");
+      printf("* Bit Shift Assembler 05-Nov-2020         *\n");
       printf("* --------------------------------------- *\n");
       printf("* Source: %-31.31s *\n",Src);
       printf("* List  : %-31.31s *\n",Lst);
